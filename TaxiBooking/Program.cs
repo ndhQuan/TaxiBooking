@@ -6,6 +6,7 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using TaxiBooking;
 using TaxiBooking.DataContext;
+using TaxiBooking.Hubs;
 using TaxiBooking.Models;
 using TaxiBooking.Repository;
 using TaxiBooking.Repository.IRepository;
@@ -52,8 +53,9 @@ builder.Services.AddAuthentication(x =>
 });
 
 builder.Services.AddCors();
+builder.Services.AddSignalR();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddNewtonsoftJson();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -103,5 +105,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<JourneyHub>("/hubs/journey");
 
 app.Run();

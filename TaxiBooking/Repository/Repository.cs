@@ -22,7 +22,6 @@ namespace TaxiBooking.Repository
             await SaveAsync();
         }
 
-        //"Villa, VillaSpecial"
         public async Task<T> GetAsync(Expression<Func<T, bool>> filter = null, string includeProperties = null, bool tracked = true)
         {
             IQueryable<T> query = dbSet;
