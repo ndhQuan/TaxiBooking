@@ -15,7 +15,7 @@ namespace TaxiBooking.Models
         [Required]
         [MaxLength(12)]
         public override string PhoneNumber { get => base.PhoneNumber; set => base.PhoneNumber = value; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; }
         public DateTime LastUpdatedAt { get; set; }
     }
 }

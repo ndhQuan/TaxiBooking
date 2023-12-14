@@ -10,7 +10,7 @@ namespace TaxiBooking.Models
         [ForeignKey("Type")]
         public int? TypeId { get; set; }
         public TaxiType Type { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; }
         public DateTime LastUpdatedAt { get; set;}
 
     }

@@ -20,7 +20,7 @@ namespace TaxiBooking.Models
         [ForeignKey("Taxi")]
         public string BienSoXe { get; set; }
         public Taxi Taxi { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; }
         public DateTime LastUpdatedAt { get; set; }
     }
 }

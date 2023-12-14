@@ -71,7 +71,7 @@ namespace TaxiBooking.Controllers
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     new Claim("fullname", userFromDb.Name),
-                    new Claim("id", userFromDb.Id.ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, userFromDb.Id.ToString()),
                     new Claim(ClaimTypes.Email, userFromDb.Email),
                     new Claim("phoneNumber", userFromDb.PhoneNumber),
                     new Claim(ClaimTypes.Role, roles.FirstOrDefault()),

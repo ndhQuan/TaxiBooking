@@ -25,7 +25,52 @@ namespace TaxiBooking.DataContext
                 .IsUnique();
         }
 
-        protected override void ConfigureConventions(ModelConfigurationBuilder builder)
+        public override int SaveChanges()
+        {
+            var journeyEntries = ChangeTracker.Entries<JourneyLog>();
+
+            foreach (var entry in journeyEntries)
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    entry.Entity.CreatedAt = DateTime.Now;
+                }
+            }
+
+            var taxiEntries = ChangeTracker.Entries<Taxi>();
+
+            foreach (var entry in taxiEntries)
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    entry.Entity.CreatedAt = DateTime.Now;
+                }
+            }
+
+            var driverStateEntries = ChangeTracker.Entries<DriverState>();
+            foreach (var entry in driverStateEntries)
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    entry.Entity.CreatedAt = DateTime.Now;
+                }
+            }
+
+            var userEntries = ChangeTracker.Entries<AppUser>();
+
+            foreach (var entry in userEntries)
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    entry.Entity.CreatedAt = DateTime.Now;
+                }
+            }
+
+
+            return base.SaveChanges();
+        }
+    
+    protected override void ConfigureConventions(ModelConfigurationBuilder builder)
         {
             base.ConfigureConventions(builder);
             builder.Properties<TimeOnly>()

@@ -9,6 +9,7 @@ using System.Security.Claims;
 using TaxiBooking.Models;
 using TaxiBooking.Models.DTO;
 using TaxiBooking.Repository.IRepository;
+using TaxiBooking.Utility;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TaxiBooking.Controllers
@@ -55,7 +56,7 @@ namespace TaxiBooking.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = SD.Role_Admin)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -149,12 +150,12 @@ namespace TaxiBooking.Controllers
             }
             var driverState = await _dbDriverState.GetAsync(u => u.DriverId == id, tracked: false);
 
-            DriverStateUpdatePartialDTO driverStateDTO = _mapper.Map<DriverStateUpdatePartialDTO>(driverState);
-
             if (driverState == null)
             {
                 return BadRequest();
             }
+
+            DriverStateUpdatePartialDTO driverStateDTO = _mapper.Map<DriverStateUpdatePartialDTO>(driverState);
 
             patchDTO.ApplyTo(driverStateDTO, ModelState);
             DriverState model = _mapper.Map<DriverState>(driverStateDTO);
