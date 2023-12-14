@@ -16,19 +16,20 @@ namespace TaxiBooking.Models
         [ForeignKey("Taxi")]
         public string LicensePlate { get; set; }
         public Taxi Taxi { get; set; }
-        public string StartPos { get; set; }
-        public float LatStart { get; set; }
-        public float LongStart { get; set; }
-        public string DesPos { get; set; }
-        public float LatDes { get; set; }
-        public float LongDes { get; set; }
+        public string StartAddr { get; set; }
+        public float StartLat { get; set; }
+        public float StartLng { get; set; }
+        public string EndAddr { get; set; }
+        public float EndLat { get; set; }
+        public float EndLng { get; set; }
         public float Distance { get; set; }
         public TimeOnly TimeStart { get; set; }
         public TimeOnly TimeEnd { get; set; }
         public int State { get; set; }
-        public int Rating { get; set; }
+        [Range(1,5)]
+        public int? Rating { get; set; }
         public float TotalPrice { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; }
         public DateTime LastUpdatedAt { get; set; }
     }
 }

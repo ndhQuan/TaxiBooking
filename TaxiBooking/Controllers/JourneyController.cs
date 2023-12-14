@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
 using System.Net;
@@ -30,7 +31,7 @@ namespace TaxiBooking.Controllers
             _response = new();
         }
 
-        [HttpGet(Name = "GetJourney")]
+        [HttpGet(Name = "GetJourneys")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -87,84 +88,120 @@ namespace TaxiBooking.Controllers
             return _response;
         }
 
-        //[HttpPost]
-        //[Authorize]
-        //[ProducesResponseType(StatusCodes.Status201Created)]
-        //[ProducesResponseType(StatusCodes.Status404NotFound)]
-        //[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        //public async Task<ActionResult<APIResponse>> CreateJourney([FromBody]JourneyCreateDTO createDTO)
-        //{
-        //    try
-        //    {
-        //        if (await _dbJourney.GetAsync(t => t.DriverId == createDTO.DriverId) != null)
-        //        {
-        //            ModelState.AddModelError("ErrorMessages", "Driver already Exists!");
-        //            return BadRequest(ModelState);
-        //        }
+        [HttpGet("{id:int}",Name = "GetJourney")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<ActionResult<APIResponse>> GetJourney(int id)
+        {
+            try
+            {
+                if(id == 0)
+                {
+                    _response.StatusCode=HttpStatusCode.BadRequest;
+                    _response.IsSuccess=false;
+                    return BadRequest(_response);
+                }
+                JourneyLog Journey = await _dbJourney.GetAsync(u=>u.Id == id);
+                if(Journey == null)
+                {
+                    _response.StatusCode=HttpStatusCode.NotFound;
+                    _response.IsSuccess=false;
+                    return NotFound(_response);
+                }
+                _response.StatusCode = HttpStatusCode.OK;
+                _response.Result = _mapper.Map<JourneyDTO>(Journey);
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string>() { ex.ToString() };
+            }
+            return _response;
+        }
 
-        //        if (await _dbUser.GetAsync(t => t.Id == createDTO.DriverId) == null)
-        //        {
-        //            ModelState.AddModelError("ErrorMessages", "Driver Id is Invalid!");
-        //            return BadRequest(ModelState);
-        //        }
 
-        //        if (await _dbTaxi.GetAsync(t => t.TaxiId == createDTO.BienSoXe) == null)
-        //        {
-        //            ModelState.AddModelError("ErrorMessages", "LicensePlate is Invalid!");
-        //            return BadRequest(ModelState);
-        //        }
+        [HttpPost]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<APIResponse>> CreateJourney([FromBody] JourneyCreateDTO createDTO)
+        {
+            try
+            {
+                if (await _dbUser.GetAsync(t => t.Id == createDTO.CustomerId) == null)
+                {
+                    ModelState.AddModelError("ErrorMessages", "Customer Id is Invalid");
+                    return BadRequest(ModelState);
+                }
 
-        //        if (createDTO == null)
-        //        {
-        //            return BadRequest(createDTO);
-        //        }
-        //        Journey newState = _mapper.Map<Journey>(createDTO);
-        //        await _dbJourney.CreateAsync(newState);
-        //        _response.IsSuccess = true;
-        //        _response.StatusCode = System.Net.HttpStatusCode.Created;
-        //        _response.Result = newState;
-        //        return CreatedAtRoute("GetJourney", new { id = newState.DriverId }, _response);
-        //    }
-        //    catch(Exception ex) 
-        //    {
-        //        _response.IsSuccess = false;
-        //        _response.ErrorMessages.Add(ex.Message);
-        //    }
-        //    return _response;
-        //}
+                if (await _dbUser.GetAsync(t => t.Id == createDTO.DriverId) == null)
+                {
+                    ModelState.AddModelError("ErrorMessages", "Driver Id is Invalid!");
+                    return BadRequest(ModelState);
+                }
 
-        //[Authorize]
-        //[HttpPut("{id}")]
-        //[ProducesResponseType(StatusCodes.Status204NoContent)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //public async Task<ActionResult<APIResponse>> UpdateJourney(string id, [FromBody]JourneyUpdateDTO updateDTO)
-        //{
-        //    try
-        //    {
-        //        if (updateDTO == null || id != updateDTO.DriverId)
-        //        {
-        //            return BadRequest();
-        //        }
+                if (await _dbTaxi.GetAsync(t => t.TaxiId == createDTO.LicensePlate) == null)
+                {
+                    ModelState.AddModelError("ErrorMessages", "LicensePlate is Invalid!");
+                    return BadRequest(ModelState);
+                }
 
-        //        var Journey = _dbJourney.GetAsync(u=>u.DriverId == id);
-        //        if(Journey == null)
-        //        {
-        //            return NotFound();
-        //        }
+                if (createDTO == null)
+                {
+                    return BadRequest(createDTO);
+                }
+                JourneyLog newState = _mapper.Map<JourneyLog>(createDTO);
+                await _dbJourney.CreateAsync(newState);
+                _response.IsSuccess = true;
+                _response.StatusCode = System.Net.HttpStatusCode.Created;
+                _response.Result = newState;
+                return CreatedAtRoute("GetJourney", new { id = newState.Id }, _response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages.Add(ex.Message);
+            }
+            return _response;
+        }
 
-        //        Journey newState = _mapper.Map<Journey>(updateDTO);
-        //        await _dbJourney.UpdateAsync(newState);
-        //        _response.IsSuccess = true;
-        //        _response.StatusCode = System.Net.HttpStatusCode.NoContent;
-        //        return Ok(_response);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _response.IsSuccess = false;
-        //        _response.ErrorMessages = new List<string>() { ex.ToString() };
-        //    }
-        //    return _response;
-        //}
+        [Authorize]
+        [HttpPatch("UpdatePartial/{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<APIResponse>> UpdateJourney(int id, JsonPatchDocument<JourneyUpdatePartialDTO> patchDTO)
+        {
+            if (patchDTO == null || id == 0)
+            {
+                return BadRequest();
+            }
+            var journey = await _dbJourney.GetAsync(u => u.Id == id, tracked: false);
+
+            if (journey == null)
+            {
+                return BadRequest();
+            }
+
+            JourneyUpdatePartialDTO journeyDTO = _mapper.Map<JourneyUpdatePartialDTO>(journey);
+
+            patchDTO.ApplyTo(journeyDTO, ModelState);
+            JourneyLog model = _mapper.Map<JourneyLog>(journeyDTO);
+
+            await _dbJourney.UpdateAsync(model);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            return NoContent();
+        }
+
+
 
     }
 }

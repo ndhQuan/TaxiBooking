@@ -26,7 +26,7 @@ namespace TaxiBooking.Repository
             return await query.ToListAsync();
         }
 
-        public async Task<AppUser> GetAsync(Expression<Func<AppUser, bool>> filter = null, bool tracked = false)
+        public async Task<AppUser> GetAsync(Expression<Func<AppUser, bool>> filter = null, bool tracked = true)
         {
             IQueryable<AppUser> query = dbSet;
             if (!tracked)

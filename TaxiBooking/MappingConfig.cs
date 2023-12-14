@@ -12,6 +12,7 @@ namespace TaxiBooking
             CreateMap<Taxi, TaxiCreateDTO>().ReverseMap();
             CreateMap<Taxi, TaxiDTO>().ReverseMap();
             CreateMap<DriverState, DriverStateUpdateDTO>().ReverseMap();
+            CreateMap<DriverState, DriverStateUpdatePartialDTO>().ReverseMap();
             CreateMap<DriverState, DriverStateCreateDTO>().ReverseMap();
             CreateMap<JourneyLog, JourneyDTO>().ReverseMap();
             //CreateMap<AppUser, UserUpdateDTO>().ReverseMap();

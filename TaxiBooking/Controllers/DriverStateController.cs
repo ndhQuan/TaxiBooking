@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
 using System.Net;
@@ -8,6 +9,7 @@ using System.Security.Claims;
 using TaxiBooking.Models;
 using TaxiBooking.Models.DTO;
 using TaxiBooking.Repository.IRepository;
+using TaxiBooking.Utility;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TaxiBooking.Controllers
@@ -54,7 +56,7 @@ namespace TaxiBooking.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = SD.Role_Admin)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -89,7 +91,7 @@ namespace TaxiBooking.Controllers
                 _response.IsSuccess = true;
                 _response.StatusCode = HttpStatusCode.Created;
                 _response.Result = newState;
-                return CreatedAtRoute("GetDriverState", new { id = newState.DriverId }, _response);
+                return CreatedAtRoute("GetDriverState", new { driverId = newState.DriverId }, _response);
             }
             catch(Exception ex) 
             {
@@ -99,7 +101,7 @@ namespace TaxiBooking.Controllers
             return _response;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -107,21 +109,26 @@ namespace TaxiBooking.Controllers
         {
             try
             {
-                if (updateDTO == null || id != updateDTO.DriverId)
+                if (updateDTO == null)
                 {
                     return BadRequest();
                 }
-
-                var driverState = _dbDriverState.GetAsync(u=>u.DriverId == id);
+                var driverState = await _dbDriverState.GetAsync(u=>u.DriverId == id);
                 if(driverState == null)
                 {
                     return NotFound();
                 }
 
-                DriverState newState = _mapper.Map<DriverState>(updateDTO);
-                await _dbDriverState.UpdateAsync(newState);
+                driverState.latCurrent = updateDTO.latCurrent;
+                driverState.longCurrent = updateDTO.longCurrent;
+                driverState.Duong = updateDTO.Duong;
+                driverState.PhuongXa = updateDTO.PhuongXa;
+                driverState.QuanHuyen = updateDTO.QuanHuyen;
+                driverState.TinhTP = updateDTO.TinhTP;
+
+                await _dbDriverState.UpdateAsync(driverState);
                 _response.IsSuccess = true;
-                _response.StatusCode = HttpStatusCode.NoContent;
+                _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
             catch (Exception ex)
@@ -130,6 +137,36 @@ namespace TaxiBooking.Controllers
                 _response.ErrorMessages = new List<string>() { ex.ToString() };
             }
             return _response;
+        }
+
+        [HttpPatch("UpdatePartial/{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<APIResponse>> UpdateDriverStatus(string id, JsonPatchDocument<DriverStateUpdatePartialDTO> patchDTO)
+        {
+            if (patchDTO == null || id == null)
+            {
+                return BadRequest();
+            }
+            var driverState = await _dbDriverState.GetAsync(u => u.DriverId == id, tracked: false);
+
+            if (driverState == null)
+            {
+                return BadRequest();
+            }
+
+            DriverStateUpdatePartialDTO driverStateDTO = _mapper.Map<DriverStateUpdatePartialDTO>(driverState);
+
+            patchDTO.ApplyTo(driverStateDTO, ModelState);
+            DriverState model = _mapper.Map<DriverState>(driverStateDTO);
+
+            await _dbDriverState.UpdateAsync(model);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            return NoContent();
         }
 
     }

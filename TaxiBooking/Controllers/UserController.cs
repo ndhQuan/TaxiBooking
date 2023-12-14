@@ -70,31 +70,28 @@ namespace TaxiBooking.Controllers
                 {
                     return BadRequest();
                 }
-                AppUser user = await _dbUser.GetAsync(u=>u.Id == id, false);
+                AppUser user = await _dbUser.GetAsync(u=>u.Id == id);
                 if(user == null)
                 {
                     return NotFound();
                 }
-                AppUser updatedUser = new()
-                {
-                    Id = updateDTO.Id,
-                    PhoneNumber = updateDTO.PhoneNumber,
-                    Email = updateDTO.Email,
-                    Name = updateDTO.Name,
-                    Image = updateDTO.Image,
-                    UserName = user.UserName,
-                    SecurityStamp = user.SecurityStamp,
-                    PasswordHash = user.PasswordHash,
-                    LockoutEnabled = user.LockoutEnabled,
-                    NormalizedEmail = user.NormalizedEmail,
-                    NormalizedUserName =user.NormalizedUserName,
-                    ConcurrencyStamp = user.ConcurrencyStamp,
-                };
+                user.Name = updateDTO.Name; 
+                user.Email = updateDTO.Email;
+                user.PhoneNumber = updateDTO.PhoneNumber;
+                user.UserName = updateDTO.PhoneNumber;
 
-                await _dbUser.UpdateAsync(updatedUser);
-                _response.IsSuccess = true;
-                _response.StatusCode = System.Net.HttpStatusCode.NoContent;
-                return Ok(_response);
+                var result = await _userManager.UpdateAsync(user);
+
+                if (result.Succeeded)
+                {
+                    
+                    _response.StatusCode = System.Net.HttpStatusCode.NoContent;
+                    return Ok(_response);
+                }
+                _response.IsSuccess = false;
+                _response.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                return BadRequest(_response);
+                
             }
             catch(Exception ex)
             {

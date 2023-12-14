@@ -35,7 +35,7 @@ namespace TaxiBooking.Controllers
         [HttpPost("login")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Login([FromBody] LoginRequestDTO model)
+        public async Task<IActionResult> Login([FromBody] LoginRequestDTO model, [FromQuery] string? role)
         {
             AppUser userFromDb = _db.Users.FirstOrDefault(u=>u.PhoneNumber == model.Phone);
             bool isValid = await _userManager.CheckPasswordAsync(userFromDb, model.Password);
@@ -49,6 +49,18 @@ namespace TaxiBooking.Controllers
                 return BadRequest(_response);
             }
 
+            if (!string.IsNullOrEmpty(role))
+            {
+                var userRoles = await _userManager.GetRolesAsync(userFromDb);
+                if (!userRoles.Contains(role))
+                {
+                    _response.Result = new LoginResponseDTO();
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.IsSuccess = false;
+                    _response.ErrorMessages.Add("Your account does not have permission to log in to the driver application.");
+                    return BadRequest(_response);
+                }
+            }
             //generate Jwt Token
             var roles = await _userManager.GetRolesAsync(userFromDb);
             JwtSecurityTokenHandler tokenHandler = new();
@@ -59,9 +71,9 @@ namespace TaxiBooking.Controllers
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     new Claim("fullname", userFromDb.Name),
-                    new Claim("id", userFromDb.Id.ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, userFromDb.Id.ToString()),
                     new Claim(ClaimTypes.Email, userFromDb.Email),
-                    new Claim(ClaimTypes.MobilePhone, userFromDb.PhoneNumber),
+                    new Claim("phoneNumber", userFromDb.PhoneNumber),
                     new Claim(ClaimTypes.Role, roles.FirstOrDefault()),
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
@@ -89,7 +101,6 @@ namespace TaxiBooking.Controllers
             }
 
             _response.StatusCode = HttpStatusCode.OK;
-            _response.IsSuccess = false;
             _response.Result = loginResponse;
             return Ok(_response);
         }

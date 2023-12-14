@@ -2,12 +2,11 @@
 
 namespace TaxiBooking.Models.DTO
 {
-    public class DriverStateCreateDTO
+    public class DriverStateUpdatePartialDTO
     {
-        [Required]
         public string DriverId { get; set; }
-        public float? latCurrent { get; set; }
-        public float? longCurrent { get; set; }
+        public float latCurrent { get; set; }
+        public float longCurrent { get; set; }
         public string TinhTP { get; set; }
         public string QuanHuyen { get; set; }
         public string PhuongXa { get; set; }
@@ -15,5 +14,6 @@ namespace TaxiBooking.Models.DTO
         [Range(0, 2)]
         public int TrangThai { get; set; }
         public string BienSoXe { get; set; }
+
     }
 }

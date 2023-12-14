@@ -15,12 +15,12 @@ namespace TaxiBooking.Models
         public string QuanHuyen { get; set; }
         public string PhuongXa { get; set; }
         public string Duong { get; set; }
-        [MaxLength(50)]
+        [Range(0, 2)]
         public int TrangThai { get; set; }
         [ForeignKey("Taxi")]
         public string BienSoXe { get; set; }
         public Taxi Taxi { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; }
         public DateTime LastUpdatedAt { get; set; }
     }
 }
