@@ -32,12 +32,12 @@ namespace TaxiBooking.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<APIResponse>> GetUsers([FromQuery]string? role)
+        public async Task<ActionResult<APIResponse>> GetUsers([FromQuery] string? role)
         {
             try
             {
                 IEnumerable<AppUser> users;
-                if(!string.IsNullOrEmpty(role))
+                if (!string.IsNullOrEmpty(role))
                 {
                     users = await _userManager.GetUsersInRoleAsync(role);
                 }
@@ -49,7 +49,37 @@ namespace TaxiBooking.Controllers
                 _response.Result = users.ToList();
                 return Ok(_response);
             }
-            catch(Exception ex) 
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages.Add(ex.Message);
+            }
+            return _response;
+        }
+
+        [HttpGet("{id}")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<APIResponse>> GetUser(string id)
+        {
+            try
+            {
+                AppUser user = await _dbUser.GetAsync(u=>u.Id==id);
+                if (user == null)
+                {
+                    _response.StatusCode = System.Net.HttpStatusCode.NotFound;
+                    _response.IsSuccess=false;
+                    return NotFound(_response);
+                }
+                var userDTO = _mapper.Map<UserDTO>(user);
+                _response.StatusCode = System.Net.HttpStatusCode.OK;
+                _response.Result = userDTO;
+                return Ok(_response);
+            }
+            catch (Exception ex)
             {
                 _response.IsSuccess = false;
                 _response.ErrorMessages.Add(ex.Message);

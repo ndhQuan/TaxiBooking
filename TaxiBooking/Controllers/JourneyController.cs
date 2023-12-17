@@ -37,11 +37,45 @@ namespace TaxiBooking.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult<APIResponse>> GetJourneys([FromQuery]string phone, bool isCustomer = true)
+        public async Task<ActionResult<APIResponse>> GetJourneys([FromQuery]string phone, [FromQuery] string id, bool isCustomer = true)
         {
             try
             {
-                if(!string.IsNullOrEmpty(phone))
+                if (!string.IsNullOrEmpty(id))
+                {
+                    var user = await _dbUser.GetAsync(u => u.Id == id);
+                    if (user == null)
+                    {
+                        return BadRequest();
+                    }
+
+                    if (isCustomer)
+                    {
+                        var customerJourney = await _dbJourney.GetAllAsync(u => u.CustomerId == user.Id);
+                        if (customerJourney == null)
+                        {
+                            _response.IsSuccess = false;
+                            return NotFound();
+                        }
+                        _response.Result = _mapper.Map<List<JourneyDTO>>(customerJourney);
+                        _response.StatusCode = HttpStatusCode.OK;
+                        return Ok(_response);
+                    }
+                    else
+                    {
+                        var driverJourney = await _dbJourney.GetAllAsync(u => u.DriverId == user.Id);
+                        if (driverJourney == null)
+                        {
+                            _response.IsSuccess = false;
+                            return NotFound();
+                        }
+                        _response.Result = _mapper.Map<List<JourneyDTO>>(driverJourney);
+                        _response.StatusCode = HttpStatusCode.OK;
+                        return Ok(_response);
+                    }
+
+                }
+                else if (!string.IsNullOrEmpty(phone))
                 {
                     var user = await _dbUser.GetAsync(u => u.PhoneNumber == phone);
                     if (user == null)

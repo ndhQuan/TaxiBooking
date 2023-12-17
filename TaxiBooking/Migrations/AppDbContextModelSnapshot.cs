@@ -277,7 +277,7 @@ namespace TaxiBooking.Migrations
 
                     b.HasIndex("BienSoXe");
 
-                    b.ToTable("DriverState");
+                    b.ToTable("DriverState", (string)null);
                 });
 
             modelBuilder.Entity("TaxiBooking.Models.JourneyLog", b =>
@@ -347,7 +347,7 @@ namespace TaxiBooking.Migrations
 
                     b.HasIndex("LicensePlate");
 
-                    b.ToTable("Journey");
+                    b.ToTable("Journey", (string)null);
                 });
 
             modelBuilder.Entity("TaxiBooking.Models.Taxi", b =>
@@ -368,7 +368,7 @@ namespace TaxiBooking.Migrations
 
                     b.HasIndex("TypeId");
 
-                    b.ToTable("Taxis");
+                    b.ToTable("Taxis", (string)null);
                 });
 
             modelBuilder.Entity("TaxiBooking.Models.TaxiType", b =>
@@ -384,7 +384,7 @@ namespace TaxiBooking.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TaxiTypes");
+                    b.ToTable("TaxiTypes", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

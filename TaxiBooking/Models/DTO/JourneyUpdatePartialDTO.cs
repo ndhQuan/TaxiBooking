@@ -1,6 +1,6 @@
 ﻿namespace TaxiBooking.Models.DTO
 {
-    public class JourneyUpdatePartialDTO
+    public class JourneyUpdatePartialDTO : BaseEntity
     {
         public int Id { get; set; }
         public string CustomerId { get; set; }

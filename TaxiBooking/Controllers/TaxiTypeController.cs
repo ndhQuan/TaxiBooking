@@ -44,6 +44,35 @@ namespace TaxiBooking.Controllers
             return _response;
         }
 
+        [HttpGet("{id:int}")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<ActionResult<APIResponse>> GetTaxiType(int id)
+        {
+            try
+            {
+                TaxiType taxiType = await _dbTaxiType.GetAsync(u=>u.Id==id);
+                if (taxiType == null)
+                {
+                    _response.StatusCode = System.Net.HttpStatusCode.NotFound;
+                    _response.IsSuccess = false;
+                    return NotFound(_response);
+                }
+                _response.StatusCode = System.Net.HttpStatusCode.OK;
+                _response.Result = taxiType;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string>() { ex.ToString() };
+            }
+            return _response;
+        }
+
+
         [HttpPost]
         [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status201Created)]

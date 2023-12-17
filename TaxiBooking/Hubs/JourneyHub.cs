@@ -17,6 +17,14 @@ namespace TaxiBooking.Hubs
             _dbDriverState = dbDriverState;
             _dbTaxi = dbTaxi;
         }
+        public void RefreshDeniedList()
+        {
+            var userId = Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (denidedList.ContainsKey(userId))
+            {
+                denidedList.Remove(userId);
+            }
+        }
         public async Task SendBookingRequest(string startAddr, float startLat, float startLng, string endAddr, float endLat, float endLng, int taxiTypeId)
         {
             var userId = Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -46,7 +54,6 @@ namespace TaxiBooking.Hubs
                 return;
             }
 
-            Console.WriteLine(driverId.FirstOrDefault());
             await Clients.User(driverId.FirstOrDefault()).SendAsync("ReceiveRequestInfo", userId, name, phoneNumber, startAddr, startLat, startLng, endAddr, endLat, endLng);
         }
         public async Task SendDenyResponse(string userId)
@@ -60,7 +67,6 @@ namespace TaxiBooking.Hubs
             {
                 denidedList.Add(userId, new List<string> { DriverId });
             }
-            Console.WriteLine(userId + "  " + DriverId);
             await Clients.User(userId).SendAsync("ReceiveDenyResponse");
         }
         public async Task SendDriverInfo(string customerId)
@@ -71,7 +77,6 @@ namespace TaxiBooking.Hubs
             var name = driver.Name;
             var phoneNumber = driver.PhoneNumber;
             var licensePlate = driverState.BienSoXe;
-            Console.WriteLine(customerId + "customer");
             if (denidedList.ContainsKey(customerId))
             {
                 denidedList.Remove(customerId);
@@ -89,16 +94,12 @@ namespace TaxiBooking.Hubs
         }
         public async Task SendPickedupNotification(string guestId)
         {
-            Console.WriteLine("Notification");
             await Clients.User(guestId).SendAsync("ReceivedPickedupNotification");
         }
-        public void RefreshDeniedList()
+        
+        public async Task SendFinishNotification(string guestId)
         {
-            var userId = Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (denidedList.ContainsKey(userId))
-            {
-                denidedList.Remove(userId);
-            }
+            await Clients.User(guestId).SendAsync("ReceivedFinishNotification");
         }
     }
 }

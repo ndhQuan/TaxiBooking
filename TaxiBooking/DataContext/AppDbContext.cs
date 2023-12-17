@@ -25,52 +25,26 @@ namespace TaxiBooking.DataContext
                 .IsUnique();
         }
 
-        public override int SaveChanges()
+        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var journeyEntries = ChangeTracker.Entries<JourneyLog>();
+            var AddedEntities = ChangeTracker.Entries<BaseEntity>().Where(E => E.State == EntityState.Added).ToList();
 
-            foreach (var entry in journeyEntries)
+            AddedEntities.ForEach(E =>
             {
-                if (entry.State == EntityState.Added)
-                {
-                    entry.Entity.CreatedAt = DateTime.Now;
-                }
-            }
+                E.Entity.CreatedAt = DateTime.Now;
+            });
 
-            var taxiEntries = ChangeTracker.Entries<Taxi>();
+            var EditedEntities = ChangeTracker.Entries<BaseEntity>().Where(E => E.State == EntityState.Modified).ToList();
 
-            foreach (var entry in taxiEntries)
+            EditedEntities.ForEach(E =>
             {
-                if (entry.State == EntityState.Added)
-                {
-                    entry.Entity.CreatedAt = DateTime.Now;
-                }
-            }
+                E.Entity.LastUpdatedAt = DateTime.Now;
+            });
 
-            var driverStateEntries = ChangeTracker.Entries<DriverState>();
-            foreach (var entry in driverStateEntries)
-            {
-                if (entry.State == EntityState.Added)
-                {
-                    entry.Entity.CreatedAt = DateTime.Now;
-                }
-            }
-
-            var userEntries = ChangeTracker.Entries<AppUser>();
-
-            foreach (var entry in userEntries)
-            {
-                if (entry.State == EntityState.Added)
-                {
-                    entry.Entity.CreatedAt = DateTime.Now;
-                }
-            }
-
-
-            return base.SaveChanges();
+            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         }
-    
-    protected override void ConfigureConventions(ModelConfigurationBuilder builder)
+
+        protected override void ConfigureConventions(ModelConfigurationBuilder builder)
         {
             base.ConfigureConventions(builder);
             builder.Properties<TimeOnly>()

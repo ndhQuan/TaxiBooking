@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TaxiBooking.Models
 {
-    public class JourneyLog
+    public class JourneyLog : BaseEntity
     {
         [Key]
         public int Id { get; set; }
@@ -29,7 +29,5 @@ namespace TaxiBooking.Models
         [Range(1,5)]
         public int? Rating { get; set; }
         public float TotalPrice { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime LastUpdatedAt { get; set; }
     }
 }
